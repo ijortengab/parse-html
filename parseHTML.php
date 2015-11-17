@@ -7,7 +7,7 @@
  *   IjorTengab
  *
  * @homepage
- *   https://github.com/ijortengab/parseHTML
+ *   https://github.com/ijortengab/parse-html
  *
  * Definisi FAQ
  *
