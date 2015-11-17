@@ -53,6 +53,8 @@
  *       );
  *
  */
+namespace IjorTengab;
+
 class parseHTML {
 
   /**
