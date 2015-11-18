@@ -1,7 +1,9 @@
 <?php
+namespace IjorTengab;
+
 /**
  * @file
- *   parseHTML.php
+ *   ParseHtml.php
  *
  * @author
  *   IjorTengab
@@ -53,9 +55,7 @@
  *       );
  *
  */
-namespace IjorTengab;
-
-class parseHTML {
+class ParseHtml {
 
   /**
    * Data mentah keseluruhan dokumen html.
