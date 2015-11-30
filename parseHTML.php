@@ -1,6 +1,4 @@
 <?php
-namespace IjorTengab;
-
 /**
  * @file
  *   ParseHtml.php
@@ -42,7 +40,7 @@ namespace IjorTengab;
  *     Idem dengan Array Elements Starttag, namun pada value adalah komponen
  *     lengkap element yakni terdiri dari starttag, contents, dan endtag -
  *     kecuali void element. Untuk referensi void element, dapat melihat
- *     method validate_tag_void_element().
+ *     method validateTagVoidElement().
  *
  *     Contoh:
  *
@@ -55,7 +53,11 @@ namespace IjorTengab;
  *       );
  *
  */
-class ParseHtml {
+
+namespace IjorTengab;
+
+class ParseHtml
+{
 
   /**
    * Data mentah keseluruhan dokumen html.
@@ -91,7 +93,7 @@ class ParseHtml {
 
   /**
    * Internal only. Property tempat penampungan hasil build regex oleh method
-   * parse_conditions().
+   * parseConditions().
    */
   public static $mask;
 
@@ -105,7 +107,8 @@ class ParseHtml {
    * @param $elements array
    *   Merupakan "Array Elements Full", lihat pada Definisi FAQ.
    */
-  function __construct($raw = NULL, $elements = NULL) {
+  function __construct($raw = NULL, $elements = NULL)
+  {
     if (isset($raw)) {
       $this->raw = $raw;
     }
@@ -125,14 +128,16 @@ class ParseHtml {
   /**
    * Mendapatkan nilai dari properti $raw.
    */
-  public function getRaw() {
+  public function getRaw()
+  {
     return $this->raw;
   }
 
   /**
    * Mendapatkan nilai dari property $elements.
    */
-  public function getElements() {
+  public function getElements()
+  {
     if (empty($this->elements)) {
       return array('0' => $this->raw);
     }
@@ -161,7 +166,8 @@ class ParseHtml {
    *   (bila selector valid dan ditemukan) atau object kosong tanpa element
    *   (bila selector tidak valid atau hasil tidak ditemukan).
    */
-  public function find($selector) {
+  public function find($selector)
+  {
     // Raw dapat bernilai NULL, terjadi jika find tidak menemukan element.
     // Bila hasil pencarian kosong, atau selector tidak valid, maka
     // Kita perlu me-return Object kosong, agar mendukung thread method oleh
@@ -173,7 +179,7 @@ class ParseHtml {
     // Dapatkan element.
     $elements = $this->getElements();
     // Translate selector.
-    $multi_selector = $this->translate_selector($selector);
+    $multi_selector = $this->translateSelector($selector);
     if (!$multi_selector) {
       return new parseHTML;
     }
@@ -181,7 +187,7 @@ class ParseHtml {
     $storage = array();
     while ($search_elements = array_shift($multi_selector)) {
       // Search.
-      $result = $this->find_elements($elements, $search_elements, 0);
+      $result = $this->findElements($elements, $search_elements, 0);
       // Nilai dari $result dapat NULL atau empty array, merge
       // jika ada value.
       if ($result) {
@@ -201,7 +207,8 @@ class ParseHtml {
    * Reference:
    * - http://api.jquery.com/html/
    */
-  public function html() {
+  public function html()
+  {
     // Kita hanya toleransi pada element yang pertama.
     $elements = $this->getElements();
     return array_shift($elements);
@@ -215,7 +222,8 @@ class ParseHtml {
    * Reference:
    * - http://api.jquery.com/text/
    */
-  public function text() {
+  public function text()
+  {
     return strip_tags($this->html());
   }
 
@@ -230,7 +238,8 @@ class ParseHtml {
    * param $name string
    *  Nama attribute yang ingin didapat value-nya.
    */
-  public function attr($name) {
+  public function attr($name)
+  {
     $element = $this->html();
     $mask = '/^\<\w+\s*[^>]*\>/i';
     if (preg_match($mask, $element, $mathces)) {
@@ -243,42 +252,48 @@ class ParseHtml {
   /**
    *
    */
-  public function prev($selector = NULL) {
+  public function prev($selector = NULL)
+  {
     // Todo.
   }
 
   /**
    *
    */
-  public function next($selector = NULL) {
+  public function next($selector = NULL)
+  {
     // Todo.
   }
 
   /**
    *
    */
-  public function parent($selector = NULL) {
+  public function parent($selector = NULL)
+  {
     // Todo.
   }
 
   /**
    *
    */
-  public function parents($selector = NULL) {
+  public function parents($selector = NULL)
+  {
     // Todo.
   }
 
   /**
    *
    */
-  public function children($selector = NULL) {
+  public function children($selector = NULL)
+  {
     // Todo.
   }
 
   /**
    *
    */
-  public function contents() {
+  public function contents()
+  {
     // Todo.
   }
 
@@ -292,7 +307,8 @@ class ParseHtml {
    * Reference:
    * - http://api.jquery.com/eq/
    */
-  public function eq($index) {
+  public function eq($index)
+  {
     // Todo: support for negative index.
     $elements = $this->getElements();
     $keys = array_keys($elements);
@@ -322,7 +338,8 @@ class ParseHtml {
    *   and value is value from attribute value
    *   (string or array).
    */
-  public function extractForm($selector = NULL) {
+  public function extractForm($selector = NULL)
+  {
     if (is_null($selector)) {
       $selector = 'input, textarea, select, button';
     }
@@ -379,7 +396,8 @@ class ParseHtml {
    *   Value dari attribute name pada input type submit yang akan dijadikan
    *   trigger untuk mengirim form.
    */
-  public function preparePostForm($submit) {
+  public function preparePostForm($submit)
+  {
     $fields = $this->extractForm();
     $submit = $this->extractForm('input[type=submit]');
     // Buang semua input submit kecuali 'BalInqRq'.
@@ -408,11 +426,12 @@ class ParseHtml {
    *   Mengembalikan "Array Elements Starttag"
    *   lihat pada Definisi FAQ.
    */
-  public static function getElementByAttribute($attribute, $html, $callback = NULL, $param_arr = NULL) {
+  public static function getElementByAttribute($attribute, $html, $callback = NULL, $param_arr = NULL)
+  {
     // Set storage.
     $storage = array();
     // Validate.
-    if (!self::validate_attribute_element($attribute) || strlen($html) === 0) {
+    if (!self::validateAttributeElement($attribute) || strlen($html) === 0) {
       return $storage;
     }
     // Find string.
@@ -430,7 +449,7 @@ class ParseHtml {
       if ($pch && ctype_space($pch)) {
         // Cek apakah posisi pointer dari ditemukannya attribute itu
         // berada diantara start tag html.
-        if (self::validate_inside_start_tag($position, $html)) {
+        if (self::validateInsideStartTag($position, $html)) {
           // Cek apakah karakter pertama setelah
           // karakter < pada element adalah string valid.
           $prefix = substr($html, 0, $position);
@@ -438,7 +457,7 @@ class ParseHtml {
           $starttag_lt_position = strrpos($prefix, '<');
           $starttag_rt_position = $position + strpos($suffix, '>') + strlen('>');
           $start_tag = substr($html, $starttag_lt_position, $starttag_rt_position - $starttag_lt_position);
-          if (self::validate_start_tag($start_tag)) {
+          if (self::validateStartTag($start_tag)) {
             // Validasi selesai, maka masukkan data ke $storage.
             // Tapi tunggu dulu, karena method ini juga dapat digunakan
             // oleh method lain, maka cek dulu apakah ada custom filter.
@@ -510,7 +529,7 @@ class ParseHtml {
    *      DAN kurang dari 2000.
    *
    *   Operator yang tersedia dapat dilihat pada method
-   *   parse_conditions().
+   *   parseConditions().
    *
    * @param $html
    *   String dengan format html.
@@ -528,21 +547,22 @@ class ParseHtml {
    *     );
    *
    */
-  public static function getElementByAttributes($conditions, $html) {
+  public static function getElementByAttributes($conditions, $html)
+  {
     $elements = array();
     // Validate.
     $conditions = trim($conditions);
     if (empty($html) || empty($conditions)) {
       return $elements;
     }
-    $attributes = self::parse_conditions($conditions);
+    $attributes = self::parseConditions($conditions);
     foreach($attributes as $attribute) {
       $elements += self::getElementByAttribute($attribute, $html);
     }
     // Filtering.
     foreach($elements as $position => $element) {
       $attributes = self::extractAttributes($element);
-      if (!self::_validate_attribute_conditions($attributes, $conditions)) {
+      if (!self::_validateAttributeConditions($attributes, $conditions)) {
         unset($elements[$position]);
       }
     }
@@ -590,7 +610,8 @@ class ParseHtml {
    *     );
    *
    */
-  public static function getElementById($value, $html) {
+  public static function getElementById($value, $html)
+  {
     $callback = 'self::_getElementById';
     $param_arr = array($value);
     return self::getElementByAttribute('id', $html, $callback, $param_arr);
@@ -643,7 +664,8 @@ class ParseHtml {
    *     );
    *
    */
-  public static function getElementByClass($value, $html) {
+  public static function getElementByClass($value, $html)
+  {
     $callback = 'self::_getElementByClass';
     $param_arr = array($value);
     return self::getElementByAttribute('class', $html, $callback, $param_arr);
@@ -681,12 +703,13 @@ class ParseHtml {
    *     '253' => '<a class>',
    *   );
    */
-  public static function getElementByTag($tag, $html, $callback = NULL, $param_arr = NULL) {
+  public static function getElementByTag($tag, $html, $callback = NULL, $param_arr = NULL)
+  {
     $tag = trim($tag);
     // Set storage.
     $storage = array();
     // Validate.
-    // if (self::validate_tag_element($tag) === FALSE) {
+    // if (self::validateTagElement($tag) === FALSE) {
       // return $storage;
     // }
     // Find string.
@@ -706,7 +729,7 @@ class ParseHtml {
         // Cek apakah posisi pointer dari ditemukannya attribute itu
         // berada diantara start tag html.
         $_position = $position + 1;
-        if ($_position && self::validate_inside_start_tag($_position, $html)) {
+        if ($_position && self::validateInsideStartTag($_position, $html)) {
           $suffix = substr($html, $_position);
           $starttag_lt_position = $position;
           $starttag_rt_position = strpos($html, '>', $position) + strlen('>');
@@ -759,7 +782,8 @@ class ParseHtml {
    *    - key = 2, merupakan endtag, atau FALSE jika not found or failed.
    *   Info element ini dapat dengan mudah diparsing dengan fungsi list().
    */
-  public static function parseElement($element) {
+  public static function parseElement($element)
+  {
     $starttag = $contents = $endtag = FALSE;
     // Dapatkan starttag dengan regex.
     $mask = '/^<(?P<tag>\w+)\s*[^>]*>/';
@@ -866,7 +890,8 @@ class ParseHtml {
    *     ),
    *   )
    */
-  public static function translate_selector($selector) {
+  public static function translateSelector($selector)
+  {
     $string = trim($selector);
     $string_length = strlen($string);
     $meta_characters = '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~';
@@ -1230,7 +1255,8 @@ class ParseHtml {
    *   );
    *
    */
-  public static function extractAttributes($start_tag, $validate = FALSE) {
+  public static function extractAttributes($start_tag, $validate = FALSE)
+  {
     $attributes = array();
     // Validasi start_tag.
     $mask = '/^<\w+\s*(?P<attributes>[^>]*)>$/';
@@ -1311,7 +1337,7 @@ class ParseHtml {
       }
     }
     if (!empty($attributes) && $validate) {
-      $validates = self::validate_attribute_element(array_keys($attributes));
+      $validates = self::validateAttributeElement(array_keys($attributes));
       foreach($validates as $validate) {
         list($key, $result) = $validate;
         if (!$result) {
@@ -1331,7 +1357,8 @@ class ParseHtml {
    *  Reference: http://www.w3.org/TR/html-markup/syntax.html#void-element
    *
    */
-  public static function validate_tag_void_element($tag) {
+  public static function validateTagVoidElement($tag)
+  {
     $tags = '
       |area|base|br|col|command|embed|hr|img|input|keygen|link|meta|param|
       |source|track|wbr|
@@ -1357,7 +1384,8 @@ class ParseHtml {
    * @param $tag string
    *   Tag Name yang akan divalidasi.
    */
-  public static function validate_tag_element($tag) {
+  public static function validateTagElement($tag)
+  {
     $tags = '
       |a|abbr|address|area|article|aside|audio|
       |b|base|bdi|bdo|blockquote|body|br|button|
@@ -1391,10 +1419,11 @@ class ParseHtml {
    * @param $start_tag
    *   Example: <div id="main-content">
    */
-  public static function validate_start_tag($start_tag) {
+  public static function validateStartTag($start_tag)
+  {
     $mask = '/^<(?P<tag>\w+)\s*[^>]*>$/';
     if (preg_match($mask, $start_tag, $matches)) {
-      return self::validate_tag_element($matches['tag']);
+      return self::validateTagElement($matches['tag']);
     }
     return FALSE;
   }
@@ -1419,7 +1448,8 @@ class ParseHtml {
    *   menjadi array dengan 2 value dimana key 0 adalah nama attribute, dan
    *   key 1 adalah hasil validasi.
    */
-  public static function validate_attribute_element($names) {
+  public static function validateAttributeElement($names)
+  {
     $string = is_string($names);
     // Todo: Add support for Unicode characters.
     $names = (array) $names;
@@ -1459,7 +1489,8 @@ class ParseHtml {
    * @param $html
    *   String dengan format html.
    */
-  public static function validate_inside_start_tag($position, $html) {
+  public static function validateInsideStartTag($position, $html)
+  {
     $result = '';
     // Jika kita bergerak mundur dari $position, maka
     // karakter < harus lebih dahulu ditemukan daripada karakter >
@@ -1532,11 +1563,11 @@ class ParseHtml {
    *
    * @param $search_elements array
    *   Array yang berisi informasi pencarian per satu selector. Variable
-   *   ini didapat dari hasil method "translate_selector()".
+   *   ini didapat dari hasil method "translateSelector()".
    * @param $looping int
    *   Internal only, untuk debugging. Method find() dan turunannya
-   *   (yakni: find_elements(), find_element_each(), dan
-   *   find_element_each_direct()) dapat terjadi recursive untuk
+   *   (yakni: findElements(), findElementEach(), dan
+   *   findElementEach_direct()) dapat terjadi recursive untuk
    *   mencapai hasil. Nilai variable ini akan bertambah ketika proses
    *   mengalami looping.
    *
@@ -1544,10 +1575,11 @@ class ParseHtml {
    *   Mengembalikan array seperti parameter $elements yang mana selector
    *   telah berhasil mendapatkan element yang diinginkan.
    */
-  protected function find_elements($elements, $search_elements, $looping) {
+  protected function findElements($elements, $search_elements, $looping)
+  {
     $storage = array();
     foreach ($elements as $position => $element) {
-      $result = $this->find_element_each($position, $element, $search_elements, $looping);
+      $result = $this->findElementEach($position, $element, $search_elements, $looping);
       if ($result) {
         $storage += $result;
       }
@@ -1565,11 +1597,12 @@ class ParseHtml {
    *   kecuali void element.
    * @param $search_elements array
    *   Variable pencarian per satu selector, merupakan hasil dari method
-   *   translate_selector().
+   *   translateSelector().
    * @param $looping int
    *   Internal only. Properti ini digunakan oleh developer saat debugging.
    */
-  protected function find_element_each($position, $element, $search_elements, $looping) {
+  protected function findElementEach($position, $element, $search_elements, $looping)
+  {
     // Lakukan modifikasi khusus pada kasus $element = $this->raw.
     // Jika terdapat tag ini pada awal html: <!DOCTYPE>
     // menyebabkan $contens = FALSE.
@@ -1586,15 +1619,15 @@ class ParseHtml {
     if ($search_element = array_shift($search_elements)) {
       // Khusus selector direct seperti "ul > li", maka kita perlu
       // melakukan manipulasi element agar pencarian didapat.
-      // Oleh karena itu kita mampir dulu ke method find_element_each_direct()
+      // Oleh karena itu kita mampir dulu ke method findElementEach_direct()
       // untuk nantinya akan kembali ke method ini.
       if ($search_element['direct']) {
         // Kembalikan lagi variable pencarian element ke
         // kumpulan pencarian element-element.
         array_unshift($search_elements, $search_element);
-        // Oper ke method find_element_each_direct() untuk dilakukan
+        // Oper ke method findElementEach_direct() untuk dilakukan
         // manipulasi.
-        return $this->find_element_each_direct($position, $element, $search_elements, $looping);
+        return $this->findElementEach_direct($position, $element, $search_elements, $looping);
       }
 
       // Mulai membedah dan mencari informasi pencarian element dengan tag
@@ -1610,7 +1643,7 @@ class ParseHtml {
         $param_arr = array($tag, $contents);
         if (!empty($attributes)) {
           $param_arr[] = 'self::getElementByAttributes';
-          $param_arr[] = array($this->build_conditions($attributes));
+          $param_arr[] = array($this->buildConditions($attributes));
         }
       }
       else {
@@ -1635,13 +1668,13 @@ class ParseHtml {
                 $param_arr = array($attribute['name'], $contents);
               }
               else {
-                $conditions = $this->build_conditions(array($attribute));
+                $conditions = $this->buildConditions(array($attribute));
                 $param_arr = array($conditions, $contents);
               }
           }
         }
         else {
-          $conditions = $this->build_conditions($attributes);
+          $conditions = $this->buildConditions($attributes);
           $param_arr = array($conditions, $contents);
         }
       }
@@ -1671,9 +1704,9 @@ class ParseHtml {
     // Jika hasil pencarian ternyata element jamak, sementara variable
     // pencarian ($search_elements) secara descendent masih ada,
     // maka proses akan recursive dimana proses dimulai lagi
-    // ke method find_elements() sampai variable pencarian habis.
+    // ke method findElements() sampai variable pencarian habis.
     if ($search_elements) {
-      return $this->find_elements($storage, $search_elements, ++$looping);
+      return $this->findElements($storage, $search_elements, ++$looping);
     }
     // Finish simpan ke storage.
     return $storage;
@@ -1687,7 +1720,8 @@ class ParseHtml {
    *
    *
    */
-  protected function find_element_each_direct($position, $element, $search_elements, $looping) {
+  protected function findElementEach_direct($position, $element, $search_elements, $looping)
+  {
     $storage = array();
     $childrens = $this->getElementChildren($position, $element);
     list($starttag, $contents, $endtag) = $this->parseElement($element);
@@ -1705,8 +1739,8 @@ class ParseHtml {
           $a .= ' ';
         }
         $pseudo_element = $starttag . $a . $children . $endtag;
-        // Oper kembali ke method find_element_each().
-        $result = $this->find_element_each($position, $pseudo_element, $search_elements, ++$looping);
+        // Oper kembali ke method findElementEach().
+        $result = $this->findElementEach($position, $pseudo_element, $search_elements, ++$looping);
         if ($result) {
           $storage += $result;
         }
@@ -1751,7 +1785,8 @@ class ParseHtml {
    *       'x' => '<li>',
    *     );
    */
-  protected function getElementChildren($position, $element, $auto_expand = FALSE) {
+  protected function getElementChildren($position, $element, $auto_expand = FALSE)
+  {
     // Parsing element.
     list($starttag, $contents, $endtag) = $this->parseElement($element);
     // Khusus void element, tidak diperlukan tree.
@@ -1797,7 +1832,8 @@ class ParseHtml {
    * conditions akan digunakan sebagai argument pada method
    * getElementByAttribute().
    */
-  protected function build_conditions($attributes) {
+  protected function buildConditions($attributes)
+  {
     $implode = function ($var) {
       return implode(' ', $var);
     };
@@ -1814,7 +1850,8 @@ class ParseHtml {
    * @param $add int
    *   Angka yang akan ditambah pada key dari parameter $elements.
    */
-  protected function addPosition(&$elements, $add = 0 ) {
+  protected function addPosition(&$elements, $add = 0 )
+  {
     if ($add === 0) {
       return;
     }
@@ -1838,7 +1875,8 @@ class ParseHtml {
    * @param $html string
    *   String dengan format html.
    */
-  protected function constructElements(&$starttags, $html) {
+  protected function constructElements(&$starttags, $html)
+  {
     // echo 'var_dump($starttag): '; var_dump($starttag);
     // return;
     // $mask = '/^<(?P<tag>\w+)\s*[^>]*>$/';
@@ -1861,7 +1899,8 @@ class ParseHtml {
    * @param $html string
    *   String dengan format html.
    */
-  protected function constructElement($starttag_lt_position, &$starttag, $html) {
+  protected function constructElement($starttag_lt_position, &$starttag, $html)
+  {
     // echo 'var_dump($starttag_lt_position): '; var_dump($starttag_lt_position);
     // echo 'var_dump($starttag): '; var_dump($starttag);
     // Validate.
@@ -1910,7 +1949,8 @@ class ParseHtml {
    * @param $html string
    *   String dengan format html.
    */
-  protected function destructElements(&$elements, $html) {
+  protected function destructElements(&$elements, $html)
+  {
     foreach ($elements as $starttag_lt_position => &$element) {
       $this->destructElement($element);
     }
@@ -1923,7 +1963,8 @@ class ParseHtml {
    *   Element full terdiri dari starttag, contents, dan endtag - kecuali
    *   void element.
    */
-  protected function destructElement(&$element) {
+  protected function destructElement(&$element)
+  {
     list($starttag, $contents, $endtag) = $this->parseElement($element);
     $element = $starttag;
   }
@@ -1932,7 +1973,8 @@ class ParseHtml {
    * Memecah conditions dan dapatkan informasi attribute - attribute
    * yang ada dalam info conditions tersebut.
    */
-  protected static function parse_conditions($conditions) {
+  protected static function parseConditions($conditions)
+  {
     $conditions = (strpos($conditions, ' OR ') !== false) ? explode(' OR ', $conditions) : array($conditions);
     $storage = array();
     foreach ($conditions as $key => $value) {
@@ -1980,7 +2022,8 @@ class ParseHtml {
   /**
    * Validasi seluruh attributes berdasarkan conditions.
    */
-  protected static function _validate_attribute_conditions($row = array(), $conditions = null) {
+  protected static function _validateAttributeConditions($row = array(), $conditions = null)
+  {
     if (!empty($row)) {
       if (!empty($conditions)) {
         $conditions = (strpos($conditions, ' OR ') !== false) ? explode(' OR ', $conditions) : array($conditions);
@@ -1990,12 +2033,12 @@ class ParseHtml {
             $value = explode(' AND ', $value);
             $and   = '';
             foreach ($value as $k => $v) {
-              $and .= $a = self::_validate_attribute_condition($row, $v);
+              $and .= $a = self::_validateAttributeCondition($row, $v);
             }
             $or .= (strpos($and, '0') !== false) ? '0' : '1';
           }
           else {
-            $or .= $a = self::_validate_attribute_condition($row, $value);
+            $or .= $a = self::_validateAttributeCondition($row, $value);
           }
         }
         return (strpos($or, '1') !== false) ? true : false;
@@ -2008,7 +2051,8 @@ class ParseHtml {
   /**
    * Validasi satu attributes per satu condition.
    */
-  protected static function _validate_attribute_condition($row, $condition) {
+  protected static function _validateAttributeCondition($row, $condition)
+  {
     if (preg_match(self::$mask, trim($condition), $capture)) {
       $field = $capture[1];
       $op    = $capture[2];
@@ -2086,7 +2130,8 @@ class ParseHtml {
   /**
    * Filtering tambahan untuk attribute berdasarkan class.
    */
-  private static function _getElementByClass($value, $start_tag) {
+  private static function _getElementByClass($value, $start_tag)
+  {
     $conditions = $value;
     $conditions = (strpos($conditions, ' OR ') !== FALSE) ? explode(' OR ', $conditions) : array($conditions);
     $attributes = self::extractAttributes($start_tag);
@@ -2111,7 +2156,8 @@ class ParseHtml {
   /**
    * Filtering tambahan untuk attribute berdasarkan id.
    */
-  private static function _getElementById($value, $start_tag) {
+  private static function _getElementById($value, $start_tag)
+  {
     $attributes = self::extractAttributes($start_tag);
     if ($attributes['id'] === $value) {
       return array(

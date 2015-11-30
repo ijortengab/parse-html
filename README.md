@@ -2,10 +2,10 @@
 
 parseHTML is PHP library working like jQuery, give you an easy way to get any information from text html. 
 
-### Requirement
+## Requirement
 PHP 5.4
 
-### Usage
+## Usage
 
 If you familiar with jQuery, you'll be smile.
 
@@ -16,7 +16,7 @@ $html = $(document);                          | $html = new parseHTML($contents)
 var title = $html.find('title').text();       | $title = $html->find('title')->text();
 var url = $html.find('a.links').attr('href'); | $url = $html->find('a.links')->attr('href');
 
-### Method Support
+## Method Support
 
  Method                    | Description
 -------------------------- | --------------------------------------------
@@ -30,7 +30,7 @@ var url = $html.find('a.links').attr('href'); | $url = $html->find('a.links')->a
 ::getElementByTag()        | https://developer.mozilla.org/en-US/docs/Web/API/Element/getElementsByTagName
 ::getElementByAttribute()  | https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XUL/Method/getElementsByAttribute
 
-### Selector Support
+## Selector Support
 
 You can find more description by visit this link
 http://api.jquery.com/category/selectors/
@@ -38,21 +38,25 @@ http://api.jquery.com/category/selectors/
 
  Selector                            | Example
 ------------------------------------ | -----------------------
-ID selector                          | #my-table-1
-Class Selector                       | .links'
-Element Selector                     | element
-Descendant Selector                  | ancestor descendant
-Child Selector                       | parent > child
-Attribute                            | [name]
-Attribute Contains Prefix Selector   | [name|='value']
-Attribute Contains Selector          | [name*='value']
-Attribute Contains Word Selector     | [name~='value']
-Attribute Ends With Selector         | [name$='value']
-Attribute Equals Selector            | [name='value']
-Attribute Not Equal Selector         | [name!='value']
-Attribute Starts With Selector       | [name^='value']
+ID selector                          | ```#my-table-1```
+Class Selector                       | ```.links'```
+Element Selector                     | ```element```
+Descendant Selector                  | ```ancestor descendant```
+Child Selector                       | ```parent > child```
+Attribute                            | ```[name]```
+Attribute Contains Prefix Selector   | ```[name|='value']```
+Attribute Contains Selector          | ```[name*='value']```
+Attribute Contains Word Selector     | ```[name~='value']```
+Attribute Ends With Selector         | ```[name$='value']```
+Attribute Equals Selector            | ```[name='value']```
+Attribute Not Equal Selector         | ```[name!='value']```
+Attribute Starts With Selector       | ```[name^='value']```
 
 Of course, you can mix all selector above, example:
  - #form-register.front input
  - a.links[ref='nofollow']
  - div.office > span.address
+
+
+## Simlilar Project
+[PHP Simple HTML DOM Parser](http://simplehtmldom.sourceforge.net/)
