@@ -7,11 +7,13 @@
         {
             "name": "IjorTengab",
             "email": "m_roji28@yahoo.com",
-            "homepage": "http://github.com/ijortengab",
-            "role": "Developer"
+            "homepage": "http://github.com/ijortengab"
         }
     ],
+    "require": {
+        "php": ">=5.4.0"
+    },
     "autoload": {
-        "psr-4": {"IjorTengab\\": ""}
+        "psr-4": {"IjorTengab\\": "src/"}
     }
 }
