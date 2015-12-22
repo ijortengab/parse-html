@@ -57,6 +57,8 @@ Of course, you can mix all selector above, example:
  - a.links[ref='nofollow']
  - div.office > span.address
 
+and, you can get multiple selector, example:
+ - 'input, textarea, select, button'
 
 ## Simlilar Project
 [PHP Simple HTML DOM Parser](http://simplehtmldom.sourceforge.net/)
