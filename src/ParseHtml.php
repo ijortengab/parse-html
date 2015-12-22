@@ -885,16 +885,17 @@ class ParseHtml
      *
      * Todo, support for HTML5 element: <datalist> <keygen> <output>
      *
-     * @param $submit string
-     *   Value dari attribute name pada input type submit yang akan dijadikan
+     * @param $trigger string
+     *   Value dari attribute name pada input submit yang akan dijadikan
      *   trigger untuk mengirim form.
      */
-    public function preparePostForm($submit)
+    public function preparePostForm($trigger)
     {
         $fields = $this->extractForm();
         $submit = $this->extractForm('[type=submit]');
-        // Buang semua input submit kecuali 'BalInqRq'.
-        unset($submit[$submit]);
+
+        // Buang semua input submit kecuali 'trigger'.
+        unset($submit[$trigger]);
         return array_diff_assoc($fields, $submit);
     }
 
