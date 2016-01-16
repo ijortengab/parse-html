@@ -1,6 +1,6 @@
 # parseHTML
 
-parseHTML is PHP library working like jQuery, give you an easy way to get any information from text html. 
+parseHTML is PHP library working like jQuery, give you an easy way to get any information from text html.
 
 ## Requirement
 PHP 5.4
