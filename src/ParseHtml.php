@@ -1036,6 +1036,9 @@ class ParseHTML
                             $register_selector = true;
                         }
                     }
+                    elseif (isset($character['meta'])) {
+                        $attribute_value .= $character['meta'];
+                    }
                     break;
 
                 case 'build value':
@@ -1377,7 +1380,7 @@ class ParseHTML
             |canvas|caption|cite|code|col|colgroup|command|
             |datalist|dd|del|details|dfn|div|dl|dt|
             |em|embed|
-            |fieldset|figcaption|figure|footer|form|
+            |fieldset|figcaption|figure|footer|form|frameset|frame|
             |h1|h2|h3|h4|h5|h6|head|header|hgroup|hr|html|
             |i|iframe|img|input|ins|
             |kbd|keygen|
@@ -1740,7 +1743,7 @@ class ParseHTML
                 $space = $p - $position - strlen($starttag);
                 $a = '';
                 // Buat spasi sebagai pengganti jeda antara parent dan direct children.
-                while($space-- > 0){
+                while ($space-- > 0) {
                     $a .= ' ';
                 }
                 $pseudo_element = $starttag . $a . $children . $endtag;
