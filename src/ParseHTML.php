@@ -108,14 +108,14 @@ class ParseHTML
     public $debug = false;
 
     /**
-     * Scoupe pencarian oleh method find(). Secara default jQuery mencari area
+     * Scope pencarian oleh method find(). Secara default jQuery mencari area
      * pencarian hanya descendents. Ketika object ini BARU di-instance, maka
-     * scoupe pencarian akan diperluas menjadi keseluruhan $raw.
+     * scope pencarian akan diperluas menjadi keseluruhan $raw.
      *
      * Pilihan ini hanya bisa diubah oleh sistem secara otomatis, dengan opsi
      * yakni: 'raw', dan 'descendants'.
      */
-    private $find_scoupe = 'descendants';
+    private static $find_scope = 'descendants';
 
     /**
      * Internal only. Property tempat penampungan hasil build regex oleh method
@@ -139,7 +139,7 @@ class ParseHTML
             $this->raw = $raw;
             $this->length = 1;
             if (null === $elements) {
-                $this->find_scoupe = 'raw';
+                self::$find_scope = 'raw';
             }
             elseif (is_array($elements)) {
                 $this->elements = $elements;
@@ -211,22 +211,22 @@ class ParseHTML
         $storage = array();
 
         // Simpan informasi raw dan descendents.
-        $find_scoupe_init = $this->find_scoupe;
+        $find_scope_init = self::$find_scope;
 
         while ($search_elements = array_shift($multi_selector)) {
             // Search.
-            $result = $this->findElements($elements, $search_elements, 0);
+            $result = $this->findElements($elements, $search_elements, $this->raw);
             // Nilai dari $result dapat null atau empty array, merge
             // jika ada value.
             if ($result) {
                 $storage += $result;
             }
             // Untuk selector berikutnya, jika sejak awal property
-            // $find_scoupe merupakan 'raw', maka perlu dikembalikan ke
-            // 'raw', karena property $find_scoupe akan dipaksa ubah
+            // $find_scope merupakan 'raw', maka perlu dikembalikan ke
+            // 'raw', karena property $find_scope akan dipaksa ubah
             // oleh method ::findElementEach() ke 'descendents'.
-            if ($find_scoupe_init == 'raw') {
-                $this->find_scoupe = 'raw';
+            if ($find_scope_init == 'raw') {
+                self::$find_scope = 'raw';
             }
         }
         if (!empty($storage)) {
@@ -352,6 +352,44 @@ class ParseHTML
     }
 
     /**
+     * Kode pada method ini gabungan dari ::_construct dan ::find
+     * dengan penyesuaian.
+     */
+    public static function init($contents, $selector)
+    {
+        // Dapatkan element.
+        $elements = [0 => $contents];
+
+        // Translate selector.
+        $multi_selector = self::translateSelector($selector);
+        if (!$multi_selector) {
+            return new static::$class_name;
+        }
+        $storage = array();
+        $find_scope_init = self::$find_scope = 'raw';
+        while ($search_elements = array_shift($multi_selector)) {
+            // Search.
+            $result = self::findElements($elements, $search_elements, $contents);
+            // Nilai dari $result dapat null atau empty array, merge
+            // jika ada value.
+            if ($result) {
+                $storage += $result;
+            }
+            // Untuk selector berikutnya, jika sejak awal property
+            // $find_scope merupakan 'raw', maka perlu dikembalikan ke
+            // 'raw', karena property $find_scope akan dipaksa ubah
+            // oleh method ::findElementEach() ke 'descendents'.
+            if ($find_scope_init == 'raw') {
+                self::$find_scope = 'raw';
+            }
+        }
+        if (!empty($storage)) {
+            return new static::$class_name($contents, $storage);
+        }
+        return new static::$class_name;
+    }
+
+    /**
      * Melakukan trim dengan behaviour seperti html saat tampil di browser,
      * yakni lebih dari satu whitespace hanya akan dianggap satu whitespace.
      */
@@ -410,9 +448,9 @@ class ParseHTML
         // Find string.
         $find = $attribute;
         $length = strlen($find);
-        $scoupe = $html;
+        $scope = $html;
         $offset = 0;
-        $distance = stripos($scoupe, $find);
+        $distance = stripos($scope, $find);
 
         while ($distance !== false) {
             $position = $distance + $offset;
@@ -458,8 +496,8 @@ class ParseHTML
             }
             // Ubah offset dan scope.
             $offset += $distance + $length;
-            $scoupe = substr($html, $offset);
-            $distance = stripos($scoupe, $find);
+            $scope = substr($html, $offset);
+            $distance = stripos($scope, $find);
         }
         return $storage;
     }
@@ -688,9 +726,9 @@ class ParseHTML
         // Find string.
         $find = '<' . $tag;
         $length = strlen($find);
-        $scoupe = $html;
+        $scope = $html;
         $offset = 0;
-        $distance = stripos($scoupe, $find);
+        $distance = stripos($scope, $find);
         while ($distance !== false) {
             $position = $distance + $offset;
             // Sebelum disimpan ke storage, maka validasi beberapa hal.
@@ -734,8 +772,8 @@ class ParseHTML
 
             // Ubah offset dan scope.
             $offset += $distance + $length;
-            $scoupe = substr($html, $offset);
-            $distance = stripos($scoupe, $find);
+            $scope = substr($html, $offset);
+            $distance = stripos($scope, $find);
         }
         return $storage;
     }
@@ -1552,22 +1590,19 @@ class ParseHTML
      * @param $search_elements array
      *   Array yang berisi informasi pencarian per satu selector. Variable
      *   ini didapat dari hasil method "translateSelector()".
-     * @param $looping int
-     *   Internal only, untuk debugging. Method find() dan turunannya
-     *   (yakni: findElements(), findElementEach(), dan
-     *   findElementEach_direct()) dapat terjadi recursive untuk
-     *   mencapai hasil. Nilai variable ini akan bertambah ketika proses
-     *   mengalami looping.
+     *
+     * @param $html string
+     *   Data mentah keseluruhan dokumen html.
      *
      * Return
      *   Mengembalikan array seperti parameter $elements yang mana selector
      *   telah berhasil mendapatkan element yang diinginkan.
      */
-    protected function findElements($elements, $search_elements, $looping)
+    protected static function findElements($elements, $search_elements, $html)
     {
         $storage = array();
         foreach ($elements as $position => $element) {
-            $result = $this->findElementEach($position, $element, $search_elements, $looping);
+            $result = self::findElementEach($position, $element, $search_elements, $html);
             if ($result) {
                 $storage += $result;
             }
@@ -1586,29 +1621,29 @@ class ParseHTML
      * @param $search_elements array
      *   Variable pencarian per satu selector, merupakan hasil dari method
      *   translateSelector().
-     * @param $looping int
-     *   Internal only. Properti ini digunakan oleh developer saat debugging.
+     * @param $html string
+     *   Data mentah keseluruhan dokumen html.
      */
-    protected function findElementEach($position, $element, $search_elements, $looping)
+    protected static function findElementEach($position, $element, $search_elements, $html)
     {
         $storage = array();
 
-        // Untuk scoupe = raw, maka itu sama dengan selector yang digunakan
+        // Untuk scope = raw, maka itu sama dengan selector yang digunakan
         // saat initialize, contoh jQuery:
         // var $table = $(selector);
-        // Untuk scoupe = descendants, maka itu sama dengan selector, pada
+        // Untuk scope = descendants, maka itu sama dengan selector, pada
         // method .find(), contoh jQuery:
         // var $table = $(selector);
         // var $span = $table.find(selector);
-        switch ($this->find_scoupe) {
+        switch (self::$find_scope) {
             case 'descendants':
-                list($starttag, $contents, $endtag) = $this->parseElement($element);
-                $scoupe = $contents;
+                list($starttag, $contents, $endtag) = self::parseElement($element);
+                $scope = $contents;
                 $offset = strlen($starttag);
                 break;
 
             case 'raw':
-                $scoupe = $this->raw;
+                $scope = $html;
                 $offset = 0;
                 break;
         }
@@ -1626,7 +1661,7 @@ class ParseHTML
                 array_unshift($search_elements, $search_element);
                 // Oper ke method findElementEach_direct() untuk dilakukan
                 // manipulasi.
-                return $this->findElementEach_direct($position, $element, $search_elements, $looping);
+                return self::findElementEach_direct($position, $element, $search_elements, $html);
             }
 
             // Mulai membedah dan mencari informasi pencarian element dengan tag
@@ -1639,10 +1674,10 @@ class ParseHTML
             // Mulai mencari method yang tepat.
             if (!empty($tag)) {
                 $callback = 'self::getElementByTag';
-                $param_arr = array($tag, $scoupe);
+                $param_arr = array($tag, $scope);
                 if (!empty($attributes)) {
                     $param_arr[] = 'self::getElementByAttributes';
-                    $param_arr[] = array($this->buildConditions($attributes));
+                    $param_arr[] = array(self::buildConditions($attributes));
                 }
             }
             else {
@@ -1652,29 +1687,29 @@ class ParseHTML
                     switch ($attribute['name']) {
                         case 'id':
                             $callback = 'self::getElementById';
-                            $param_arr = array($attribute['value'], $scoupe);
+                            $param_arr = array($attribute['value'], $scope);
                             break;
 
                         case 'class':
                             $callback = 'self::getElementByClass';
                             $attribute['value'] = str_replace(' ', ' AND ', $attribute['value']);
-                            $param_arr = array($attribute['value'], $scoupe);
+                            $param_arr = array($attribute['value'], $scope);
                             break;
 
                         default:
                             if (empty($attribute['operator']) && empty($attribute['value'])) {
                                 $callback = 'self::getElementByAttribute';
-                                $param_arr = array($attribute['name'], $scoupe);
+                                $param_arr = array($attribute['name'], $scope);
                             }
                             else {
-                                $conditions = $this->buildConditions(array($attribute));
-                                $param_arr = array($conditions, $scoupe);
+                                $conditions = self::buildConditions(array($attribute));
+                                $param_arr = array($conditions, $scope);
                             }
                     }
                 }
                 else {
-                    $conditions = $this->buildConditions($attributes);
-                    $param_arr = array($conditions, $scoupe);
+                    $conditions = self::buildConditions($attributes);
+                    $param_arr = array($conditions, $scope);
                 }
             }
 
@@ -1685,7 +1720,7 @@ class ParseHTML
 
             // Variable $result berisi informasi element-element berupa array
             // (atau array kosong jika tidak ditemukan) dimana
-            // key merupakan posisi pointer relative terhadap scoupe element
+            // key merupakan posisi pointer relative terhadap scope element
             // dan value merupakan start tag.
             // Kita perlu menyesuaikan posisi pointer agar relative terhadap
             // keseluruhan dokumen html.
@@ -1694,18 +1729,18 @@ class ParseHTML
             // dari awalnya hanya startag,
             // menjadi element lengkap yang terdiri dari starttag, contents,
             // endtag (kecuali void element).
-            $this->constructElements($results, $this->raw);
+            self::constructElements($results, $html);
             // Masukkan ke storage.
             $storage += $results;
         }
 
-        // Paksa untuk ubah find_scoupe ke descendent, karena
+        // Paksa untuk ubah find_scope ke descendent, karena
         // untuk argument $search_elements berikutnya akan mencari
         // descendent. Untuk multi selector yang menggunakan koma, nanti
-        // akan dikembalikan ke raw yang diubah pada method ::find().
+        // value ini akan dikembalikan ke raw yang diubah
+        // kembali oleh method ::find().
 
-        $this->find_scoupe = 'descendants';
-        // nanti jika sejak a
+        self::$find_scope = 'descendants';
 
         // Informasi variable pencarian element-element pada
         // $search_elements kini telah berkurang satu.
@@ -1714,7 +1749,7 @@ class ParseHTML
         // maka proses akan recursive dimana proses dimulai lagi
         // ke method findElements() sampai variable pencarian habis.
         if ($search_elements) {
-            return $this->findElements($storage, $search_elements, ++$looping);
+            return self::findElements($storage, $search_elements, $html);
         }
         // Finish simpan ke storage.
         return $storage;
@@ -1726,13 +1761,14 @@ class ParseHTML
      * Method ini akan memanipulasi variable $element yang mungkin awalnya
      * terdiri dari banyak nested element menjadi hanya satu saja.
      *
+     * @see ::getElementChildren
      *
      */
-    protected function findElementEach_direct($position, $element, $search_elements, $looping)
+    protected static function findElementEach_direct($position, $element, $search_elements, $html)
     {
         $storage = array();
-        $childrens = $this->getElementChildren($position, $element);
-        list($starttag, $contents, $endtag) = $this->parseElement($element);
+        $childrens = self::getElementChildren($position, $element);
+        list($starttag, $contents, $endtag) = self::parseElement($element);
         if ($childrens) {
             // Wajib mengganti direct menjadi false,
             // atau unlimited looping.
@@ -1748,7 +1784,7 @@ class ParseHTML
                 }
                 $pseudo_element = $starttag . $a . $children . $endtag;
                 // Oper kembali ke method findElementEach().
-                $result = $this->findElementEach($position, $pseudo_element, $search_elements, ++$looping);
+                $result = self::findElementEach($position, $pseudo_element, $search_elements, $html);
                 if ($result) {
                     $storage += $result;
                 }
@@ -1764,7 +1800,7 @@ class ParseHTML
      * conditions akan digunakan sebagai argument pada method
      * getElementByAttribute().
      */
-    protected function buildConditions($attributes)
+    protected static function buildConditions($attributes)
     {
         $implode = function ($var) {
             return implode(' ', $var);
@@ -1821,34 +1857,34 @@ class ParseHTML
         $storage = array();
         $find_lt = $lt = '<';
         $find_rt = $rt = '>';
-        $scoupe = $contents;
-        $distance_lt = strpos($scoupe, $find_lt);
+        $scope = $contents;
+        $distance_lt = strpos($scope, $find_lt);
         while ($distance_lt !== false) {
             // Karakter setelah < harus alphabet.
-            $char = substr($scoupe, $distance_lt + strlen($lt), 1);
+            $char = substr($scope, $distance_lt + strlen($lt), 1);
             if (false == preg_match('/[a-zA-Z]/', $char)) {
                 // Skip $lt ini, Cari lagi yang lebih valid.
                 $offset += $distance_lt + strlen($lt);
-                $scoupe = substr($element, $offset);
-                $distance_lt = stripos($scoupe, $find_lt);
+                $scope = substr($element, $offset);
+                $distance_lt = stripos($scope, $find_lt);
                 continue;
             }
             // Ketemu tag <alphabet, maka ketemu element child.
             $child_starttag_lt_position = $distance_lt + $offset;
-            $distance_rt = strpos($scoupe, $find_rt, $distance_lt);
+            $distance_rt = strpos($scope, $find_rt, $distance_lt);
             $child_starttag_rt_position = $distance_rt + $offset;
             $child_starttag = substr($element, $child_starttag_lt_position, $child_starttag_rt_position + strlen($rt) - $child_starttag_lt_position);
             self::constructElement($child_starttag_lt_position, $child_starttag, $element);
-            // Update offset dan scoupe.
+            // Update offset dan scope.
             $offset += $distance_lt + strlen($child_starttag);
-            $scoupe = substr($element, $offset);
+            $scope = substr($element, $offset);
             if (!$auto_expand) {
                 self::destructElement($child_starttag);
             }
             // Save dan...
             $storage[$child_starttag_lt_position] = $child_starttag;
             // Cari lagi.
-            $distance_lt = stripos($scoupe, $find_lt);
+            $distance_lt = stripos($scope, $find_lt);
         }
         self::addPosition($storage, $position);
         return $storage;
