@@ -316,7 +316,15 @@ class ParseHTML
      */
     public function children($selector = null)
     {
-        // Todo.
+        $storage = [];
+        $elements = $this->getElements();
+        foreach ($elements as $position => $element) {
+            $storage += $this->getElementChildren($position, $element, true);
+        }
+        if (!empty($storage)) {
+            return new static::$class_name($this->raw, $storage);
+        }
+        return new static::$class_name;
     }
 
     /**
