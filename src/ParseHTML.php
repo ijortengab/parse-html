@@ -109,7 +109,7 @@ class ParseHTML
 
     /**
      * Scope pencarian oleh method find(). Secara default jQuery mencari area
-     * pencarian hanya descendents. Ketika object ini BARU di-instance, maka
+     * pencarian hanya descendants. Ketika object ini BARU di-instance, maka
      * scope pencarian akan diperluas menjadi keseluruhan $raw.
      *
      * Pilihan ini hanya bisa diubah oleh sistem secara otomatis, dengan opsi
@@ -881,7 +881,7 @@ class ParseHTML
      *   array(
      *     // First Selector.
      *     0 => array(
-     *       // Elements descendents.
+     *       // Elements descendants.
      *       0 => array(
      *         'direct' => false
      *         'tag' => array(
@@ -907,7 +907,7 @@ class ParseHTML
      *
      *     // Second Selector.
      *     1 => array(
-     *       // Elements descendents.
+     *       // Elements descendants.
      *       0 => array(
      *         'direct' => false
      *         'tag' => array(
@@ -1631,11 +1631,11 @@ class ParseHTML
      *   Mengembalikan array seperti parameter $elements yang mana selector
      *   telah berhasil mendapatkan element yang diinginkan.
      */
-    protected static function findElements($elements, $selector_array, $html, $scope)
+    protected static function findElements($elements, $selector_array, $html, $find_scope)
     {
         $storage = array();
         foreach ($elements as $position => $element) {
-            $result = self::finder($position, $element, $selector_array, $html, $scope);
+            $result = self::finder($position, $element, $selector_array, $html, $find_scope);
             if ($result) {
                 $storage += $result;
             }
@@ -1657,7 +1657,7 @@ class ParseHTML
      * @param $html string
      *   Data mentah keseluruhan dokumen html.
      */
-    protected static function finder($position, $element, $selector_array, $html, $scope)
+    protected static function finder($position, $element, $selector_array, $html, $find_scope)
     {
         $storage = array();
 
@@ -1668,7 +1668,7 @@ class ParseHTML
         // method .find(), contoh jQuery:
         // var $table = $(selector);
         // var $span = $table.find(selector);
-        switch ($scope) {
+        switch ($find_scope) {
             case 'descendants':
                 list($starttag, $contents, $endtag) = self::parseElement($element);
                 $scope = $contents;
@@ -1700,7 +1700,7 @@ class ParseHTML
                 array_unshift($selector_array, $search_element);
                 // Oper ke method _finderBuffer() untuk dilakukan
                 // manipulasi.
-                return self::_finderBuffer($position, $element, $selector_array, $html, $scope);
+                return self::_finderBuffer($position, $element, $selector_array, $html, $find_scope);
             }
 
             // Mulai membedah dan mencari informasi pencarian element dengan tag
@@ -1793,7 +1793,7 @@ class ParseHTML
      * @see ::getElementChildren
      *
      */
-    protected static function _finderBuffer($position, $element, $selector_array, $html, $scope)
+    protected static function _finderBuffer($position, $element, $selector_array, $html, $find_scope)
     {
         $storage = array();
         $childrens = self::getElementChildren($position, $element);
@@ -1813,7 +1813,7 @@ class ParseHTML
                 }
                 $pseudo_element = $starttag . $a . $children . $endtag;
                 // Oper kembali ke method finder().
-                $result = self::finder($position, $pseudo_element, $selector_array, $html, $scope);
+                $result = self::finder($position, $pseudo_element, $selector_array, $html, $find_scope);
                 if ($result) {
                     $storage += $result;
                 }
